@@ -1,0 +1,1 @@
+c:\Program Files\gs\gs9.01\bin>gswin32c.exe -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile=perl_book.pdf 3145_Chap01.pdf 3145_Chap02.pdf
