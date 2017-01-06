@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="hu">
+  <script type="text/vbscript">
+  ' http://angrytechnician.wordpress.com/2011/02/11/replicating-phps-sha1-in-vbscript/
+  Function sha1(str)
+    Dim asc, enc, bytes, outstr, pos
+	 
+	'Borrow some objects from .NET (supported from 1.1 onwards)
+	Set asc = CreateObject("System.Text.UTF8Encoding")
+	Set enc = CreateObject("System.Security.Cryptography.SHA1CryptoServiceProvider")
+	 
+	'Convert the string to a byte array and hash it
+	bytes = asc.GetBytes_4(str)
+	bytes = enc.ComputeHash_2((bytes))
+	 
+	outstr = ""
+	 
+	'Convert the byte array to a hex string
+	For pos = 1 To Lenb(bytes)
+	 outstr = outstr & LCase(Right("0" & Hex(Ascb(Midb(bytes, pos, 1))), 2))
+	Next
+	 
+	sha1 = outstr
+  End Function
+  
+  Function URLEncode(ByVal str)
+	 Dim strTemp, strChar
+	 Dim intPos, intASCII
+	 
+	 strTemp = ""
+	 strChar = ""
+	 
+	 For intPos = 1 To Len(str)
+	  intASCII = Asc(Mid(str, intPos, 1))
+	  If intASCII = 32 Then
+	   strTemp = strTemp & "+"
+	  ElseIf ((intASCII < 123) And (intASCII > 96)) Then
+	   strTemp = strTemp & Chr(intASCII)
+	  ElseIf ((intASCII < 91) And (intASCII > 64)) Then
+	   strTemp = strTemp & Chr(intASCII)
+	  ElseIf ((intASCII < 58) And (intASCII > 47)) Then
+	   strTemp = strTemp & Chr(intASCII)
+	  Else
+	   strChar = Trim(Hex(intASCII))
+	   If intASCII < 16 Then
+	    strTemp = strTemp & "%0" & strChar
+	   Else
+	    strTemp = strTemp & "%" & strChar
+	   End If
+	  End If
+	 Next
+	 URLEncode = strTemp
+  End Function
+  
+  Sub Delay
+        dtmStartTime = Now 
+        idTimer = window.setTimeout("PausedSection", 2000, "VBScript")
+	End Sub
+
+	Sub PausedSection
+			'Msgbox dtmStartTime & vbCrLf & Now
+			
+			wb.style.background = "#96a2aa"
+			wbtext.style.background = "#96a2aa"
+			wbtext.value = ""
+			
+			window.clearTimeout(idTimer)
+	End Sub
+  
+  Sub LoadPage
+		' size the window
+  	window.resizeTo 260, 30
+  	
+  	' positioning the window
+  	strComputer = "."
+		Set objWMIService = GetObject("winmgmts:\\" & strComputer & "\root\cimv2")
+		Set colItems = objWMIService.ExecQuery("Select * From Win32_DesktopMonitor")
+		For Each objItem in colItems
+				intHorizontal = objItem.ScreenWidth
+				intVertical = objItem.ScreenHeight
+		Next
+		window.moveTo intHorizontal-260, intVertical-165
+		
+		wbtext.Focus
+  End Sub
+  
+  Sub send
+		If document.parentWindow.event.keycode<>13 Then
+			Exit Sub
+		End If
+		'MsgBox URLEncode(wbtext.value)
+		'MsgBox sha1(URLEncode(wbtext.value))
+		Set objHTTP = CreateObject("Microsoft.XMLHTTP")
+		objHTTP.open "POST", "http://<URL_TO_RECEIVE_AND_PROCESS_THE_POST_REQUEST>", False
+
+		objHTTP.setRequestHeader "Content-Type", "application/x-www-form-urlencoded"
+		objHTTP.setRequestHeader "Content-Type", "text/html; charset=utf-8"
+		objHTTP.send "entrytext=" & URLEncode(wbtext.value) & "&entrytype=std" & "&pwd=[A_DIFFICULT_PWD]" & "&sh=" & sha1(URLEncode(wbtext.value))
+		
+		If objHTTP.responseText<>"OK" Then
+			MsgBox objHTTP.responseText
+		Else
+		  wb.style.background = "gray"
+			wbtext.style.background = "gray"
+			delay
+		End If
+
+		Set objHTTP = Nothing
+  End Sub
+  
+  Sub closeapp
+    Self.close
+  End Sub
+  </script>
+  <style type="text/css">
+    body
+    {
+      font-family: Georgia, Serif;
+      font-size: 100%;
+      background-color: #96a2aa;
+      margin: 3px 3px 3px 3px;
+    }
+    div#content
+    {
+      text-align:left;
+      display:block;
+      float:left;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0 auto;
+    }
+    input#wbtext {
+      font-size: 0.9em;
+      width: 220px;
+      border: 0;
+      background-color: #96a2aa;
+      color: grey;
+    }
+    input[type=button] {
+      font-size: 0.8em;
+      border: 0;
+      background-color: #96a2aa;
+      outline: none;
+    }
+  </style>
+  <head>
+  <title>wb</title>
+  <HTA:APPLICATION
+       APPLICATIONNAME="NoteBook"
+       SCROLL="no"
+       SINGLEINSTANCE="Yes"
+       border="none"
+       borderstyle="normal"
+       innerborder="no"
+       minimizebutton="No"
+       maximizebutton="No"
+       icon=""
+       WINDOWSTATE="normal"
+       showintaskbar="no"
+  >
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  </head>
+  <body id="wb" name="wb" OnLoad="LoadPage">
+    <center>
+      <div id="content">
+        <input id="wbtext" name="wbtext" type="text" value="" onkeyup="send" />
+        <input id="sendtext"  class="button" type="button" value="S" name="sendbtn"  onClick="send" />
+        <input id="close"  class="button" type="button" value="X" name="closebtn"  onClick="closeapp" />
+      </div>
+   </body>
+</html>
