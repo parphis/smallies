@@ -15,3 +15,4 @@ remote_proc_list.hta - Simple user interface with VBScripts and batch commands t
 
 merge_pdf_gs32.bat - If you have the GhostScript software installed on your system you can use it to merge several PDF pages into a big one PDF file.
 
+modify_link.vbs - Change the path of your link file even if the path can not be found on the local system. (Windows). Use the command line to run: cscript modify_link.vbs /linkpath:"PATH_OF_THE_LINK_FILE" /target:"LINK_TARGET_PATH" /params:"APPLICATION_PARAMETERS" /description:"LINK_DESCRIPTION" /workingdir:"WORKING_DIRECTORY")
