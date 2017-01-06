@@ -1,0 +1,291 @@
+<html lang="hu">
+  <script type="text/vbscript">
+  Sub cmdlist_onclick()
+    If txt_remote_comp.Value = "" Then
+      MsgBox "Please enter a machine name."
+      txt_remote_comp.Focus
+      Exit Sub
+    End If
+    CreateProcessList
+    DisplayProcessList
+  End Sub
+  Sub cmdkillproc_onclick()
+    If txt_remote_comp.Value = "" Then
+      MsgBox "Please enter a machine name."
+      txt_remote_comp.Focus
+      Exit Sub
+    End If
+    If  txt_proc_to_kill.Value = "" Then
+      MsgBox "Please type the process name or ID to stop it."
+      txt_proc_to_kill.Focus
+      Exit Sub
+    End If
+    Set objShell = CreateObject ("WScript.shell")
+    If killtype(0).checked=True Then
+      objShell.run "cmd /C taskkill /S " & txt_remote_comp.value & " /IM " & txt_proc_to_kill.value, 0, TRUE
+    Else
+      objShell.run "cmd /C taskkill /S " & txt_remote_comp.value & " /PID " & txt_proc_to_kill.value, 0, TRUE
+    End If
+    Set objShell = Nothing
+  End Sub
+  Sub cmdShutDown_onclick()
+    If txt_remote_comp.Value = "" Then
+      MsgBox "Please enter a machine name."
+      txt_remote_comp.Focus
+      Exit Sub
+    End If
+    Set objShell = CreateObject ("WScript.shell")
+    objShell.run "cmd /C shutdown /s /m \\" & txt_remote_comp.value & " /t " & txt_time_to_kill.value & " /f /d p:0:0", 0, TRUE
+    Set objShell = Nothing
+  End Sub
+  Sub cmdRestart_onclick()
+    If txt_remote_comp.Value = "" Then
+      MsgBox "Please enter a machine name."
+      txt_remote_comp.Focus
+      Exit Sub
+    End If
+    Set objShell = CreateObject ("WScript.shell")
+    objShell.run "cmd /C shutdown /r /m \\" & txt_remote_comp.value & " /t " & txt_time_to_kill.value & " /f /d p:0:0", 0, TRUE
+    Set objShell = Nothing
+  End Sub
+  Sub CreateProcessList
+    list_processes.innerHTML = "Please wait..."
+    Set objShell = CreateObject ("WScript.shell")
+
+    strQuery = "SELECT * FROM Win32_PingStatus WHERE Address = '" & txt_remote_comp.value & "'"
+    Set colItems = GetObject("winmgmts://./root/cimv2").ExecQuery( strQuery )
+    For Each objItem in colItems
+      If Not IsObject(objItem) Then
+        list_processes.innerHTML = "Machine not found..."
+      ElseIf objItem.StatusCode = 0 Then
+        objShell.run "cmd /C tasklist /S " & txt_remote_comp.value & " /FO CSV /V > %TEMP%\ls_" & txt_remote_comp.value & ".tmp", 0, TRUE
+      Else
+        list_processes.innerHTML = "Machine not found..."
+      End If
+    Next
+    Set objShell = Nothing
+  End Sub
+  Function ReadProcList
+    Const ForReading = 1, ForWriting = 2
+    Dim sampletext, objRegExp, SearchPattern, ReplacePattern, matches
+    Dim objFSO
+
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+
+    With CreateObject("scripting.filesystemobject")
+      wPath = .GetSpecialFolder(2)
+    End With
+
+    On Error Resume Next
+    sampletext = objFSO.OpenTextFile(wPath & "\ls_" & txt_remote_comp.value & ".tmp", ForReading).ReadAll
+
+    Set objRegExp = Nothing
+    Set objFSO = Nothing
+
+    ReadProcList = sampletext
+  End Function 
+  Sub DisplayProcessList
+    ls = ReadProcList
+    
+    CsvToTable((ls))
+  End Sub
+  Sub CsvToTable(list)
+    If list="" Then
+      Exit Sub
+    End If
+    
+    Set arrayAllowed = CreateObject( "System.Collections.ArrayList" )
+    
+    Set objRegEx = CreateObject("VBScript.RegExp")
+
+    tablehtml = "<table id=""procTable"">"
+    tablehtml = tablehtml & "<thead id=""table_head""><td>"
+
+    arrLines = Split(list, vbCrLf)
+    
+    tableTitle = arrLines(0)
+    objRegEx.Global = True   
+    objRegEx.Pattern = "[,]"
+
+    colMatches = objRegEx.Replace(tableTitle, "</td><td>")
+
+    objRegEx.Pattern = "[""]"
+    colMatches = objRegEx.Replace(colMatches, "")
+
+    tablehtml = tablehtml & colMatches & "</thead><tbody>"
+
+    arrayAllowed.Clear()
+    For Each line_ in arrLines
+      arrayAllowed.Add line_         
+    Next
+    
+    arrayAllowed(0) = ""
+
+    arrayAllowed.Sort
+    
+    i = 0
+
+    'Step through the lines
+    For Each strLine in arrayAllowed
+
+      If strLine <> "" Then
+        objRegEx.Global = True   
+        objRegEx.Pattern = "[,]"
+
+        colMatches = objRegEx.Replace(strLine, "</td><td>")
+
+        objRegEx.Pattern = "[""]"
+        colMatches = objRegEx.Replace(colMatches, "")
+
+        If (i mod 2) = 0 Then
+          tablehtml = tablehtml & "<tr id=""even""><td>" & colMatches & "</td></tr>"
+        Else
+          tablehtml = tablehtml & "<tr id=""odd""><td>" & colMatches & "</td></tr>"
+        End If
+        i = i + 1
+      End If
+    Next
+
+    tablehtml = tablehtml & "</tbody></table>"
+
+    'Msgbox tablehtml
+    list_processes.innerHTML = tablehtml
+  End Sub
+  </script>
+  <script type="text/javascript">
+    function load_page() {
+      ;
+    }
+  </script>
+  <style type="text/css">
+    body
+    {
+      font-family: Verdana, sans;
+    }
+    div#content
+    {
+      text-align:center;
+      display:block;
+      float:center;
+      border:1px solid black;
+      background-color:#DFDFDF;
+      padding:15px 15px 15px 15px;
+      width:100%;
+      height:100%;
+    }
+    div#toolbar_caption
+    {
+     color: white;
+     background-color:#1C1C1C;
+     border: 1px solid black;
+     border-bottom: 0px;
+     width: 15%;
+     float:left;
+     padding: 1px 1px 1px 1px;
+    }
+    div#toolbar
+    {
+      text-align:left;
+      display:block;
+      float:left;
+      border:1px solid black;
+      background-color:#DFDFDF;
+      padding:15px 15px 15px 15px;
+      width:100%;
+      height:100%;
+    }
+    div#list_processes_caption
+    {
+     color: white;
+     background-color:#1C1C1C;
+     border: 1px solid black;
+     border-bottom: 0px;
+     width: 10%;
+     float:left;
+     padding: 1px 1px 1px 1px;
+    }
+    div#list_processes
+    {
+     color: white;
+     text-align:left;
+     display:block;
+     float:left;
+     border:1px solid black;
+     background-color:#ACACAC;
+     padding:15px 15px 15px 15px;
+     width:100%;height:100%;
+    }
+    thead#table_head
+    {
+      background-color: #AACCFF;
+    }
+    tr#even
+    {
+      background-color: #BFBFBF;
+    }
+    tr#odd
+    {
+      background-color: #DFDFDF;
+    }
+  </style>
+  <!-- HTA application to help manage easier the remote desktops -->
+  <head>
+  <title>Manage Processes Remotely</title>
+  <HTA:APPLICATION
+       APPLICATIONNAME="ManProcRem"
+       SCROLL="auto"
+       SINGLEINSTANCE="Yes"
+       borderstyle="Thin"
+       minimizebutton="Yes"
+       maximizebutton="Yes"
+       icon=""
+       WINDOWSTATE="maximize"
+  >
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+  </head>
+  <body name="pManProcRem" OnLoad="load_page()">
+    <center>
+      <div id="content">
+        <h2>Manage Processes Remotely</h2>
+        <table>
+          <tr><td><span>Computer name</span></td><td><input type="text" maxlength="20" size="40" name="txt_remote_comp" value=""></td></tr>
+          <!--<tr><td><span>User Name</span></td><td><input type="text" maxlength="20" size="40" name="txt_username" value="dmhuadmin"></td></tr>
+          <tr><td><span>Password</span></td><td><input type="password" maxlength="20" size="40" name="txt_password"></td></tr>-->
+          <tr><td></td><td><input id="cmdList" type="button" value="Get process list"></td></tr>
+        </table>
+      </div>
+      <p style="text-align:left;">
+      <div id="toolbar_caption"><span>Available functions</span></div>
+      <div id="toolbar">
+        <table>
+          <tr>
+            <td><span>Kill the following process:</span></td>
+            <td>
+              <input type="radio" name="killtype" value="byname" checked />By Name
+              <input type="radio" name="killtype" value="bypid" />By PID
+            </td>
+            <td><input type="text" size="40" name="txt_proc_to_kill" value=""></td>
+            <td><input id="cmdKillProc" type="button" value="Kill process"></td>
+          <tr>
+            <td><hr /></td>
+          </tr>
+          </tr>
+            <td><span>Shut down / Restart</span></td>
+            <td>
+              <input type="text" size="10" name="txt_time_to_kill" value="60">[sec]
+            </td>
+            <td>
+              <input id="cmdShutDown" type="button" value="Turn off machine">
+              <input id="cmdRestart" type="button" value="Restart machine">
+            </td>
+          </tr>
+        </table>
+      </div>
+      </p>
+      <p style="text-align:left;">
+      <div id="list_processes_caption"><span>Process list</span></div>
+      <div id="list_processes"></div>
+      </p>
+   </body>
+</html>
+
