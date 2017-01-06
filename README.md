@@ -21,3 +21,5 @@ volume_ctrl.vbs - Mute the system master sound volume by emulating keyboard pres
 
 wb.hta - Once a time I was in the need to create a text-notice application which can run infinitely without using big system resources. This hat/vbs based one can send the entered text to a specific website where a script can store the received text - e.g. save it to a database with current date and time and IP address the text is coming from. I have used it to log a specific daily task of mine each day for three months long.
 
+ad_when_changed.bat - It aims to find the orphaned users in an Active Directory environment. (It uses the dsquery command.)
+
