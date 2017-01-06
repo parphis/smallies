@@ -12,3 +12,6 @@ fltevt.bat - This command can gather specific MAC filter events from the System 
 managemacondhcp.hta - Poor but simple user interface aiming to add new MAC addresses to a DHCP server's MAC filter White List.
 
 remote_proc_list.hta - Simple user interface with VBScripts and batch commands to: get process list from a remote host and shut down or restart a remote machine.
+
+merge_pdf_gs32.bat - If you have the GhostScript software installed on your system you can use it to merge several PDF pages into a big one PDF file.
+
