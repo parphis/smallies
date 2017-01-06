@@ -23,3 +23,5 @@ wb.hta - Once a time I was in the need to create a text-notice application which
 
 ad_when_changed.bat - It aims to find the orphaned users in an Active Directory environment. (It uses the dsquery command.)
 
+md5.bat - If the certutil.exe is available on the system (MS Windows) this script can generate MD5 hash values of files within a root folder.
+
