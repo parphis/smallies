@@ -1,0 +1,101 @@
+<html lang="hu">
+  <script type="text/vbscript">
+  Sub Window_onLoad
+    window.resizeTo 800,340
+	End Sub
+	
+  Sub addmac_onclick()
+		'netsh dhcp server \\DHCPSERVERNAME V4 add filter allow 00-01-02-03-04-04 "Added with script"
+		
+		Set objShell = CreateObject ("WScript.shell")
+    
+    objShell.run "cmd /C netsh dhcp server \\" & txt_dhcp_server.value & " V4 add filter allow " & txt_mac.value & " """ & txt_comment.value & """", 0, TRUE
+    'MsgBox "cmd /C netsh dhcp server \\" & txt_dhcp_server.value & " V4 add filter allow " & txt_mac.value & " """ & txt_comment.value & """"
+    
+    Set objShell = Nothing
+  End Sub
+  
+  Sub removemac_onclick()
+		'netsh dhcp server \\DHCPSERVERNAME V4 delete filter 00-01-02-03-04-04
+		
+		Set objShell = CreateObject ("WScript.shell")
+    
+    objShell.run "cmd /C netsh dhcp server \\" & txt_dhcp_server.value & " V4 delete filter " & txt_mac.value, 0, TRUE
+    
+    Set objShell = Nothing
+  End Sub
+  
+  Sub dump_onclick()
+		'netsh dhcp server \\DHCPSERVERNAME dump >> some_file.txt
+		
+		Set objShell = CreateObject ("WScript.shell")
+    
+    objShell.run "cmd /C netsh dhcp server \\" & txt_dhcp_server.value & " dump > " & txt_dumpfile.value, 0, TRUE
+    
+    Set objShell = Nothing
+  End Sub
+  </script>
+  <script type="text/javascript">
+    function load_page() {
+      ;
+    }
+    
+    function clear_mac_field() {
+			document.getElementsByName('txt_mac')[0].value = '';
+    }
+    
+    function reset_mac_field() {
+			if (document.getElementsByName('txt_mac')[0].value=='') {
+				document.getElementsByName('txt_mac')[0].value = 'Example 00-01-33-11-01-AB';
+			}
+    }
+  </script>
+  <style type="text/css">
+    body
+    {
+      font-family: Verdana, sans;
+    }
+    div#content
+    {
+      text-align:center;
+      display:block;
+      float:center;
+      border:1px solid black;
+      background-color:#DFDFDF;
+      padding:15px 15px 15px 15px;
+      width:100%;
+      height:100%;
+    }
+  </style>
+  <head>
+  <title>Manage Processes Remotely</title>
+  <HTA:APPLICATION
+       APPLICATIONNAME="ManageMACOnDHCP"
+       SCROLL="auto"
+       SINGLEINSTANCE="Yes"
+       borderstyle="Thin"
+       minimizebutton="Yes"
+       maximizebutton="Yes"
+       icon=""
+       WINDOWSTATE="normal"
+       width="10"
+       height="20"
+  >
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+  </head>
+  <body name="pManMacDHCP" OnLoad="load_page()">
+    <center>
+      <div id="content">
+        <h2>Add / Remove MAC Addresses on a DHCP Server</h2>
+      </div>
+      <div id="content">
+				<table>
+          <tr><td><span>DHCP Server</span></td><td><input type="text" size="40" name="txt_dhcp_server" value="DHCPSERVERNAME"></td></tr>
+          <tr><td><span>MAC to Add or Remove</span></td><td><input type="text" size="40" name="txt_mac" value="Example 00-01-33-11-01-AB" OnFocus="clear_mac_field()" OnBlur="reset_mac_field()"></td></tr>
+          <tr><td><span>Comment for the Newly Added MAC</span></td><td><input type="text" size="40" name="txt_comment" value=""></td></tr>
+          <tr><td><span>File Path and Name for Dump File</span></td><td><input type="text" size="40" name="txt_dumpfile" value=""></td></tr>
+          <tr><td></td><td><input id="addmac" type="button" value="Add MAC"><input id="removemac" type="button" value="Remove MAC"><input id="dump" type="button" value="Dump!"></td></tr>
+        </table>
+      </div>
+   </body>
+</html>
